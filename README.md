@@ -96,3 +96,102 @@ FROM 'https://github.com/bnokoro/Data-Science/raw/master/countries%20of%20the%20
 ```
 ![alt text](image-2.png)
 
+##  Create a Database File
+
+'To create a database in DuckDB', specify the database filename when launching DuckDB, or use the ```ATTACH DATABASE``` command. 
+DuckDB will automatically create a new database if the file doesn’t exist.
+
+In your terminal, create and open a new, empty DuckDB database by specifying a filename when launching DuckDB.
+This command will create an empty database file named my_database.db in the current directory if it doesn’t already exist. If it already exists, DuckDB will open it without overwriting the data.
+```
+duckdb my_database.db
+
+```
+'Verify the Empty Database'
+
+```
+.tables
+
+
+```
+
+'Exit DuckDB'
+If you just wanted to create an empty database without adding tables or data right now, you can exit DuckDB by typing:
+```
+.exit
+
+```
+
+##  Add tables to the database
+
+1. Open the Database ```duckdb my_database.db```
+2. Create a Table
+
+```
+CREATE TABLE orders (
+      order_id INTEGER PRIMARY KEY,          -- Unique ID for each order
+      customer_id INTEGER,                   -- ID referencing the customer
+      order_date DATE,                       -- Date when the order was placed
+      shipping_date DATE,                    -- Date when the order is scheduled to ship
+      total_amount DECIMAL(10, 2),           -- Total amount of the order
+      status VARCHAR,                        -- Status of the order (e.g., 'Pending', 'Shipped', 'Delivered', 'Cancelled')
+      payment_method VARCHAR,                -- Payment method used (e.g., 'Credit Card', 'PayPal', 'Cash')
+      shipping_address VARCHAR,              -- Shipping address for the order
+      billing_address VARCHAR                -- Billing address for the order
+  );
+
+```
+3. Insert Sample Data into the 'orders' Table
+
+```
+INSERT INTO orders VALUES
+(1001, 1, '2023-10-05', '2023-10-07', 150.75, 'Shipped', 'Credit Card', '123 Elm St, Springfield', '123 Elm St, Springfield'),
+(1002, 2, '2023-10-06', '2023-10-08', 299.99, 'Pending', 'PayPal', '456 Oak St, Riverside', '456 Oak St, Riverside'),
+(1003, 1, '2023-10-07', '2023-10-09', 89.50, 'Delivered', 'Credit Card', '123 Elm St, Springfield', '123 Elm St, Springfield'),
+(1004, 3, '2023-10-08', NULL, 49.95, 'Cancelled', 'Cash', '789 Pine St, Meadowview', '789 Pine St, Meadowview');
+
+```
+4. Query the 'orders' Table to Verify
+
+```
+SELECT * FROM orders;
+```
+
+![alt text](image-3.png)
+
+## Reading a Parquet File in DuckDB
+
+DuckDB can read and write Parquet files directly, allowing you to use Parquet files as a data source or to export DuckDB tables into Parquet format.
+To read a Parquet file in DuckDB, you can use the 'read_parquet' function to treat it as a virtual table or load it into a DuckDB table for further processing.
+'Reading Parquet Data as a Virtual Table'
+If you want to query the Parquet file directly without importing it into a DuckDB table, you can do the following:
+
+```
+SELECT * FROM read_parquet('path/to/your_file.parquet');
+
+```
+![alt text](image-4.png)
+
+'Creating a Table from Parquet Data'
+If you want to load the data from a Parquet file into a DuckDB table:
+```
+CREATE TABLE my_table AS SELECT * FROM read_parquet('/mnt/c/Users/ovp47/github/DuckDB/data/mtcars.parquet');
+SELECT * FROM my_table;
+```
+This will create a new table my_table in DuckDB and load the data from the Parquet file into it.
+
+'To check' how many tables exist in your DuckDB database, you can query the information_schema.tables system table, which stores metadata about tables.
+
+```
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
+
+```
+![alt text](image-5.png)
+
+'Writing Data to a Parquet File'
+
+You can also export data from a DuckDB table to a Parquet file. For example, if you want to save the 'orders' table as a Parquet file:
+```
+COPY orders TO '/mnt/c/Users/ovp47/github/DuckDB/data/orders.parquet' (FORMAT PARQUET);
+
+```
