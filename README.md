@@ -105,21 +105,17 @@ In your terminal, create and open a new, empty DuckDB database by specifying a f
 This command will create an empty database file named my_database.db in the current directory if it doesn’t already exist. If it already exists, DuckDB will open it without overwriting the data.
 ```
 duckdb my_database.db
-
 ```
 'Verify the Empty Database'
 
 ```
 .tables
-
-
 ```
 
 'Exit DuckDB'
 If you just wanted to create an empty database without adding tables or data right now, you can exit DuckDB by typing:
 ```
 .exit
-
 ```
 
 ##  Add tables to the database
@@ -175,7 +171,7 @@ SELECT * FROM read_parquet('path/to/your_file.parquet');
 'Creating a Table from Parquet Data'
 If you want to load the data from a Parquet file into a DuckDB table:
 ```
-CREATE TABLE my_table AS SELECT * FROM read_parquet('/mnt/c/Users/ovp47/github/DuckDB/data/mtcars.parquet');
+CREATE TABLE my_table AS SELECT * FROM read_parquet('path/to/mtcars.parquet');
 SELECT * FROM my_table;
 ```
 This will create a new table my_table in DuckDB and load the data from the Parquet file into it.
@@ -192,6 +188,7 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
 
 You can also export data from a DuckDB table to a Parquet file. For example, if you want to save the 'orders' table as a Parquet file:
 ```
-COPY orders TO '/mnt/c/Users/ovp47/github/DuckDB/data/orders.parquet' (FORMAT PARQUET);
+COPY orders TO 'path/data/orders.parquet' (FORMAT PARQUET);
 
 ```
+
