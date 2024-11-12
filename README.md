@@ -98,7 +98,7 @@ FROM 'https://github.com/bnokoro/Data-Science/raw/master/countries%20of%20the%20
 
 ##  Create a Database File
 
-'To create a database in DuckDB', specify the database filename when launching DuckDB, or use the ```ATTACH DATABASE``` command. 
+1. To create a database in DuckDB , specify the database filename when launching DuckDB, or use the ```ATTACH DATABASE``` command. 
 DuckDB will automatically create a new database if the file doesn’t exist.
 
 In your terminal, create and open a new, empty DuckDB database by specifying a filename when launching DuckDB.
@@ -106,13 +106,13 @@ This command will create an empty database file named my_database.db in the curr
 ```
 duckdb my_database.db
 ```
-'Verify the Empty Database'
+2. Verify the Empty Database
 
 ```
 .tables
 ```
 
-'Exit DuckDB'
+3. Exit DuckDB 
 If you just wanted to create an empty database without adding tables or data right now, you can exit DuckDB by typing:
 ```
 .exit
@@ -137,7 +137,7 @@ CREATE TABLE orders (
   );
 
 ```
-3. Insert Sample Data into the 'orders' Table
+3. Insert Sample Data into the `orders` Table
 
 ```
 INSERT INTO orders VALUES
@@ -147,7 +147,7 @@ INSERT INTO orders VALUES
 (1004, 3, '2023-10-08', NULL, 49.95, 'Cancelled', 'Cash', '789 Pine St, Meadowview', '789 Pine St, Meadowview');
 
 ```
-4. Query the 'orders' Table to Verify
+4. Query the `orders` Table to Verify
 
 ```
 SELECT * FROM orders;
@@ -158,7 +158,7 @@ SELECT * FROM orders;
 ## Reading a Parquet File in DuckDB
 
 DuckDB can read and write Parquet files directly, allowing you to use Parquet files as a data source or to export DuckDB tables into Parquet format.
-To read a Parquet file in DuckDB, you can use the 'read_parquet' function to treat it as a virtual table or load it into a DuckDB table for further processing.
+To read a Parquet file in DuckDB, you can use the `read_parquet` function to treat it as a virtual table or load it into a DuckDB table for further processing.
 1. Reading Parquet Data as a Virtual Table
 
 If you want to query the Parquet file directly without importing it into a DuckDB table, you can do the following:
@@ -178,7 +178,7 @@ SELECT * FROM my_table;
 ```
 This will create a new table my_table in DuckDB and load the data from the Parquet file into it.
 
-To check how many tables exist in your DuckDB database, you can query the information_schema.tables system table, which stores metadata about tables.
+To check how many tables exist in your DuckDB database, you can query the `information_schema.tables` system table, which stores metadata about tables.
 
 ```
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
