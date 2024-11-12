@@ -159,7 +159,8 @@ SELECT * FROM orders;
 
 DuckDB can read and write Parquet files directly, allowing you to use Parquet files as a data source or to export DuckDB tables into Parquet format.
 To read a Parquet file in DuckDB, you can use the 'read_parquet' function to treat it as a virtual table or load it into a DuckDB table for further processing.
-'Reading Parquet Data as a Virtual Table'
+1. Reading Parquet Data as a Virtual Table
+
 If you want to query the Parquet file directly without importing it into a DuckDB table, you can do the following:
 
 ```
@@ -168,7 +169,8 @@ SELECT * FROM read_parquet('path/to/your_file.parquet');
 ```
 ![alt text](image-4.png)
 
-'Creating a Table from Parquet Data'
+2. Creating a Table from Parquet Data
+
 If you want to load the data from a Parquet file into a DuckDB table:
 ```
 CREATE TABLE my_table AS SELECT * FROM read_parquet('path/to/mtcars.parquet');
@@ -176,7 +178,7 @@ SELECT * FROM my_table;
 ```
 This will create a new table my_table in DuckDB and load the data from the Parquet file into it.
 
-'To check' how many tables exist in your DuckDB database, you can query the information_schema.tables system table, which stores metadata about tables.
+To check how many tables exist in your DuckDB database, you can query the information_schema.tables system table, which stores metadata about tables.
 
 ```
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
@@ -184,9 +186,9 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
 ```
 ![alt text](image-5.png)
 
-'Writing Data to a Parquet File'
+3. Writing Data to a Parquet File
 
-You can also export data from a DuckDB table to a Parquet file. For example, if you want to save the 'orders' table as a Parquet file:
+You can also export data from a DuckDB table to a Parquet file. For example, if you want to save the `orders` table as a Parquet file:
 ```
 COPY orders TO 'path/data/orders.parquet' (FORMAT PARQUET);
 
