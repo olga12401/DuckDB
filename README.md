@@ -259,9 +259,6 @@ SELECT * FROM read_parquet('https://<your_account_name>.blob.core.windows.net/<c
 
 ```
 
-<img width="804" alt="azure_csv" src="https://github.com/user-attachments/assets/613fac93-298e-4eae-b33f-b6b1d53c13b3">
-SELECT * FROM read_csv_auto('https://stazsnowflake.blob.core.windows.net/azurefiles/olist_customers_dataset.csv?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2024-11-14T02:35:47Z&st=2024-11-13T18:35:47Z&spr=https&sig=qxbLKJFb9LC0c2ZKeLoR9vRjIhQ5jMBEkiYo%2FB1iIfk%3D');
-
 4. Create a Table in DuckDB from the Azure Blob Storage Data.
 
 ```
@@ -275,18 +272,3 @@ SELECT * FROM name_table LIMIT 10;
 ```
 
 <img width="670" alt="blob2" src="https://github.com/user-attachments/assets/ac1b182f-dd3b-4af4-86aa-120f3ef51586">
-
-### Export Data from DuckDB to Azure Blob Storage as a Parquet File
-
-1. Export the Table Using the `COPY` Command
-
-```
-COPY name_table TO 'https://stazsnowflake.blob.core.windows.net/data/output_data.parquet?sv=2022-11-02&ss=b&srt=o&sp=wlc&se=2024-12-31T23:59:00Z&st=2024-01-01T00:00:00Z&spr=https&sig=...' (FORMAT PARQUET);
-
-```
-
-COPY orders TO 'https://stazsnowflake.blob.core.windows.net/azurefiles/orders.parquet?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2024-11-14T02:35:47Z&st=2024-11-13T18:35:47Z&spr=https&sig=qxbLKJFb9LC0c2ZKeLoR9vRjIhQ5jMBEkiYo%2FB1iIfk%3D' (FORMAT PARQUET);
-
-
-
-
