@@ -68,11 +68,13 @@ duckdb
 ```
 5.  Check for the DuckDB Prompt: If DuckDB is correctly installed, you should see a prompt that looks something like this:
 
+```
 v1.1.3 19864453f7
 Enter ".help" for usage hints.
 Connected to a transient in-memory database.
 Use ".open FILENAME" to reopen on a persistent database.
 D 
+```
 
 To return from .mode duckbox, use the command ```Ctrl + Z```.
 To get a list of the available CLI arguments, run the command  ```duckdb -help```.
@@ -94,7 +96,7 @@ SELECT count(*)
 FROM 'https://github.com/bnokoro/Data-Science/raw/master/countries%20of%20the%20world.csv';
 
 ```
-![alt text](image-2.png)
+<img width="592" alt="image-2" src="https://github.com/user-attachments/assets/1edad318-bbe6-4732-8d4d-1fe0979545d7">
 
 ##  Create a Database File
 
