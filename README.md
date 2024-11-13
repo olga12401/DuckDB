@@ -83,7 +83,7 @@ DuckDB cannot query files that live elsewhere on the internet, but that capabili
 INSTALL httpfs;
 LOAD httpfs;
 ```
-![alt text](image.png)
+<img width="606" alt="image" src="https://github.com/user-attachments/assets/d903c7db-a81a-4904-81c7-1dcf08a9032c">
 
 ##  Analyzing a CSV file with the DuckDB CLI
 
