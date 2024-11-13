@@ -196,3 +196,97 @@ COPY orders TO 'path/data/orders.parquet' (FORMAT PARQUET);
 
 ```
 
+## Accessing Files from Azure Blob Storage in DuckDB
+
+1. Set Up Azure Blob Storage and Generate SAS Token
+
+  - Log in to Azure Portal.
+  - Create a Storage Account (if you don't have one already). Go to Storage Accounts > Create and set up your storage account.
+  - Create a Container in Blob Storage.
+  - Upload Your File to the Container.
+  - Generate a Shared Access Signature (SAS) Token:
+      - In the storage account menu, find and select Shared access signature under the `Security + networking` section on the left-hand side. This page will allow you to configure and generate a SAS token for accessing your storage account resources.
+      - `Set Permissions`. Under Allowed permissions, check the following permissions:
+          * `Read`: Allows reading of the blob content (this is required to access your data).
+          * `List`: (Optional but recommended) Allows listing the contents of a container. Useful if you want to access multiple files or see file contents in the container.
+      - `Allowed Resource Types`. Check `Container` and `Object`. This will allow access to both the container (to list its contents) and the individual blobs (to read specific files).
+      - `Specify the Start and Expiry Date`. 
+          * Set the `Start date and time` (optional). You can set it to the current date and time or leave it blank to activate immediately.
+          * Set an `Expiry date and time` for when the SAS token should expire. Make sure to choose an appropriate expiration date based on how long you need access.
+      - `Allowed Protocols`. Choose `HTTPS only` for security (recommended).
+      - `Allowed IP Addresses` (Optional). You can restrict the SAS token to specific IP addresses. If you’re testing or accessing it from a known IP range, you can add it here for extra security.
+      - `Allowed IP Addresses` (Optional). You can restrict the SAS token to specific IP addresses. If you’re testing or accessing it from a known IP range, you can add it here for extra security.
+
+    <img width="878" alt="blob" src="https://github.com/user-attachments/assets/b8a71ff9-fc43-4a1e-9d8e-1ba105315f46">
+
+      - `Generate SAS and connection string` at the bottom of the page.
+      - After generating, you’ll see two important values:
+        * `SAS Token`: This is the token you’ll add to your URLs in DuckDB.
+        * `Blob service SAS URL`: This is the URL for your container, with the SAS token appended. You can use this URL directly if accessing the entire container or individual files within it.
+    - Copy the SAS Token string (it starts with `?sv=...`) or the Blob service SAS URL.
+
+### Integration the SAS Token into DuckDB
+
+1. Set Up DuckDB to Access Azure Blob Storage.  Start DuckDB and Load the `httpfs` Extension.
+
+The `httpfs` extension is required to access files over HTTP/HTTPS.
+```
+INSTALL httpfs;
+LOAD httpfs;
+```
+2. Configure your Azure storage account name and SAS token as settings in DuckDB.
+
+```
+SET azure_storage.account_name = 'your_account_name';
+SET azure_storage.sas_token = 'your_sas_token';
+```
+However, we can get en error, because the DuckDB’s `httpfs` extension, while supporting S3 and GCS storage, does not yet directly support Azure-specific configurations in the same way (as of the latest release). So we can construct the `Full URL with SAS Token`
+
+```
+https://<your_account_name>.blob.core.windows.net/<container_name>/<file_name>?<sas_token>
+
+```
+Replace <your_account_name>, <container_name>, <file_name>, and <sas_token> with your actual values.
+
+3. Read the File Directly from the Azure Blob URL.
+
+Use the `read_parquet` or `read_csv_auto` function with the full URL (including the SAS token) to access your file.
+
+```
+SELECT * FROM read_csv_auto('https://<your_account_name>.blob.core.windows.net/<container_name>/<file_name>?<sas_token>');
+
+SELECT * FROM read_parquet('https://<your_account_name>.blob.core.windows.net/<container_name>/<file_name>?<sas_token>');
+
+```
+
+<img width="804" alt="azure_csv" src="https://github.com/user-attachments/assets/613fac93-298e-4eae-b33f-b6b1d53c13b3">
+SELECT * FROM read_csv_auto('https://stazsnowflake.blob.core.windows.net/azurefiles/olist_customers_dataset.csv?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2024-11-14T02:35:47Z&st=2024-11-13T18:35:47Z&spr=https&sig=qxbLKJFb9LC0c2ZKeLoR9vRjIhQ5jMBEkiYo%2FB1iIfk%3D');
+
+4. Create a Table in DuckDB from the Azure Blob Storage Data.
+
+```
+CREATE TABLE name_table AS SELECT * FROM read_csv_auto('https://<your_account_name>.blob.core.windows.net/<container_name>/<file_name>?<sas_token>');
+
+CREATE TABLE name_table AS SELECT * FROM read_parquet('https://<your_account_name>.blob.core.windows.net/<container_name>/<file_name>?<sas_token>');
+```
+5. Verify the Table Creation.
+```
+SELECT * FROM name_table LIMIT 10;
+```
+
+<img width="670" alt="blob2" src="https://github.com/user-attachments/assets/ac1b182f-dd3b-4af4-86aa-120f3ef51586">
+
+### Export Data from DuckDB to Azure Blob Storage as a Parquet File
+
+1. Export the Table Using the `COPY` Command
+
+```
+COPY name_table TO 'https://stazsnowflake.blob.core.windows.net/data/output_data.parquet?sv=2022-11-02&ss=b&srt=o&sp=wlc&se=2024-12-31T23:59:00Z&st=2024-01-01T00:00:00Z&spr=https&sig=...' (FORMAT PARQUET);
+
+```
+
+COPY orders TO 'https://stazsnowflake.blob.core.windows.net/azurefiles/orders.parquet?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2024-11-14T02:35:47Z&st=2024-11-13T18:35:47Z&spr=https&sig=qxbLKJFb9LC0c2ZKeLoR9vRjIhQ5jMBEkiYo%2FB1iIfk%3D' (FORMAT PARQUET);
+
+
+
+
