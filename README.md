@@ -155,7 +155,7 @@ INSERT INTO orders VALUES
 SELECT * FROM orders;
 ```
 
-![alt text](image-3.png)
+<img width="890" alt="image-3" src="https://github.com/user-attachments/assets/3dfccbe5-e970-4ce4-993b-7d05cfb74433">
 
 ## Reading a Parquet File in DuckDB
 
@@ -169,7 +169,7 @@ If you want to query the Parquet file directly without importing it into a DuckD
 SELECT * FROM read_parquet('path/to/your_file.parquet');
 
 ```
-![alt text](image-4.png)
+<img width="654" alt="image-4" src="https://github.com/user-attachments/assets/d9373a2c-636d-4fae-bf06-0d5636b4101d">
 
 2. Creating a Table from Parquet Data
 
@@ -186,7 +186,7 @@ To check how many tables exist in your DuckDB database, you can query the `infor
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'main';
 
 ```
-![alt text](image-5.png)
+<img width="461" alt="image-5" src="https://github.com/user-attachments/assets/946defb7-0150-4723-951d-9f0b40c171c2">
 
 3. Writing Data to a Parquet File
 
