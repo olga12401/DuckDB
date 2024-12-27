@@ -1,0 +1,7 @@
+duckdb_profile:
+  outputs:
+    dev:
+      type: duckdb
+      path: /duckdb_1/my_database.duckdb  # Path to the DuckDB database file
+      threads: 4                          # Number of threads for dbt to use
+  target: dev

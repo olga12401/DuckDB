@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  mongodb_fetcher:
+    build:
+      context: ./mongodb
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/data # Save fetched JSON files to the local 'data' directory
+    env_file:
+      - ./mongodb/.env # Use environment file for MongoDB connection
+    command: python fetch_data.py
+
+  duckdb_loader:
+    build:
+      context: ./duckdb_1
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/data # Mount the same 'data' directory for JSON files
+      - ./duckdb_1:/duckdb_1 # Save DuckDB database to the local 'duckdb_1' directory
+    command: python load_to_duckdb.py
+    depends_on:
+      - mongodb_fetcher
+
+
+
+
