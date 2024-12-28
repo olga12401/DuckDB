@@ -3,37 +3,45 @@ import time
 import subprocess
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-STATUS_FILE = "/duckdb_1/raw_data_complete.flag"
-FLAG_FILE_OUT = "/duckdb_1/dbt_complete.flag"
+DBT_COMMANDS = [
+    ["dbt", "run"],
+    ["dbt", "test"]
+]
 
-def wait_for_raw_data():
+RAW_DATA_FLAG = "/duckdb_1/database/raw_data_complete.flag"
+TRANSFORMED_FLAG = "/duckdb_1/database/dbt_complete.flag"
+
+def wait_for_flag(flag_path, check_interval=5):
     """
-    Wait for the raw data to be loaded into DuckDB.
+    Wait for a specified flag file to be created.
     """
-    while not os.path.exists(STATUS_FILE):
-        logging.info("Waiting for raw data to be ready...")
-        time.sleep(10)
+    logging.info(f"Waiting for flag file '{flag_path}'...")
+    while not os.path.exists(flag_path):
+        time.sleep(check_interval)
+    logging.info(f"Flag file '{flag_path}' detected.")
 
-def run_dbt():
+def run_dbt_commands():
     """
-    Run DBT transformations and tests.
+    Execute the DBT commands (run and test).
     """
-    try:
-        subprocess.run(["dbt", "run"], check=True)
-        subprocess.run(["dbt", "test"], check=True)
-        logging.info("DBT transformations and tests completed successfully.")
-
-        # Create flag file to signal completion
-        with open(FLAG_FILE_OUT, "w") as f:
-            f.write("DBT_COMPLETE")
-        logging.info(f"Flag file created: {FLAG_FILE_OUT}")
-
-    except subprocess.CalledProcessError as e:
-        logging.error(f"DBT command failed: {e}")
-        exit(1)
+    for command in DBT_COMMANDS:
+        logging.info(f"Running DBT command: {' '.join(command)}")
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0:
+            logging.error(f"DBT command failed: {result.stderr}")
+            raise Exception(f"DBT command failed: {result.stderr}")
+        logging.info(result.stdout)
 
 if __name__ == "__main__":
-    wait_for_raw_data()
-    run_dbt()
+    try:
+        wait_for_flag(RAW_DATA_FLAG)
+        run_dbt_commands()
+        with open(TRANSFORMED_FLAG, "w") as flag:
+            flag.write("DBT_TRANSFORMATIONS_COMPLETE")
+        logging.info(f"Flag file created: {TRANSFORMED_FLAG}")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        exit(1)

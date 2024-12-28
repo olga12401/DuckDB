@@ -1,15 +1,22 @@
 # Use a lightweight Python base image
 FROM python:3.9-slim
 
-# Set the working directory inside the container
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the data fetch script into the container
+# Copy the fetch_data script
 COPY fetch_data.py .
+COPY .env /app/.env
 
-# Set the default command to execute the fetch_data.py script
+# Set the default command
 CMD ["python", "fetch_data.py"]
+

@@ -1,12 +1,15 @@
-name: "duckdb_project"
-version: "1.0"
-profile: "duckdb_profile"
+name: 'duckdb_project'
+version: '1.0.0'
+
+profile: 'duckdb'
+
 config-version: 2
 
-# Define paths
 model-paths: ["models"]
-test-paths: ["tests"]
 
-# Target the raw and transformed data
-data-paths: []
-target-path: "target"
+models:
+  duckdb_project:
+    raw:
+      +schema: raw
+    transformed:
+      +schema: transformed

@@ -74,4 +74,3 @@ try:
 except Exception as e:
     logging.error(f"An error occurred: {e}")
     exit(1)
-

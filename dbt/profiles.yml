@@ -1,6 +1,9 @@
-duckdb_profile:
+duckdb:
+  target: dev
   outputs:
     dev:
       type: duckdb
-      path: "/duckdb_1/my_database.duckdb"
-  target: dev
+      path: /duckdb_1/database/my_database.duckdb
+      threads: 1
+
+

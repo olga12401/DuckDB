@@ -1,46 +1,5 @@
 version: 2
 
 models:
-  - name: top_rated_movies
-    description: "Transformed table showing the top-rated movies by Metacritic score."
-    columns:
-      - name: movie_id
-        description: "Unique identifier for the movie."
-        tests:
-          - unique
-          - not_null
-      - name: title
-        description: "Title of the movie."
-        tests:
-          - not_null
-      - name: metacritic
-        description: "Metacritic score of the movie."
-        tests:
-          - not_null
-
-  - name: active_users
-    description: "Transformed table showing the most active users based on comment count."
-    columns:
-      - name: name
-        description: "Name of the user."
-        tests:
-          - not_null
-      - name: comment_count
-        description: "Number of comments made by the user."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('comments')
-              field: name
-
-  - name: movies_by_genre
-    description: "Aggregated table showing the number of movies in each genre."
-    columns:
-      - name: genres
-        description: "Genres associated with movies."
-        tests:
-          - not_null
-      - name: movie_count
-        description: "Number of movies in the genre."
-        tests:
-          - not_null
+  - name: users_comments
+    description: "Users activity"
