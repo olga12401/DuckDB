@@ -5,13 +5,12 @@ services:
     build:
       context: ./mongodb
     volumes:
-      - ./data/raw:/data  # Maps raw data directory for JSON files
+      - ./data/raw:/data  # Mount raw data directory
     env_file:
-      - ./mongodb/.env  # Load environment variables for MongoDB connection
+      - ./mongodb/.env  # MongoDB connection environment variables
     networks:
       - duckdb_network
     command: ["python", "fetch_data.py"]
-    restart: "no"
     healthcheck:
       test: ["CMD", "test", "-f", "/data/mongodb_fetch_complete.flag"]
       interval: 10s
@@ -23,40 +22,59 @@ services:
     build:
       context: ./duckdb_1
     volumes:
-      - ./data/raw:/data  # Raw JSON files
-      - ./duckdb_1/database:/duckdb_1/database  # Maps DuckDB directory
+      - ./data/raw:/data  # Mount raw data directory
+      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
     depends_on:
       mongodb_fetcher:
         condition: service_completed_successfully
     networks:
       - duckdb_network
     command: ["python", "load_to_duckdb.py"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/duckdb_1/database/raw_data_complete.flag"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   dbt_transformer:
     build:
       context: ./dbt
     volumes:
-      - ./duckdb_1/database:/duckdb_1/database  # Maps DuckDB directory
-      - ~/.dbt/profiles.yml:/root/.dbt/profiles.yml  # Mount the profiles.yml for DBT
-      - ./dbt/models:/dbt/models  # Models directory
-      - ./dbt/wait_for_transformations_and_tests.py:/dbt/wait_for_transformations_and_tests.py
+      - ./data/transformed:/data/transformed  # Mount transformed data directory
+      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
+      - ~/.dbt/profiles.yml:/root/.dbt/profiles.yml  # Mount DBT profiles
     depends_on:
-      - duckdb_raw_loader
+      duckdb_raw_loader:
+        condition: service_completed_successfully
     networks:
       - duckdb_network
     command: ["python", "wait_for_transformations_and_tests.py"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/duckdb_1/database/dbt_complete.flag"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   duckdb_transformed_loader:
     build:
       context: ./duckdb_1
     volumes:
-      - ./duckdb_1/database:/duckdb_1/database  # Maps DuckDB directory
+      - ./data/transformed:/data/transformed  # Mount transformed data directory
+      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
     depends_on:
       dbt_transformer:
         condition: service_completed_successfully
     networks:
       - duckdb_network
     command: ["python", "load_transformed_to_duckdb.py"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/duckdb_1/database/transformed_data_complete.flag"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
 networks:
   duckdb_network:
