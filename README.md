@@ -2,15 +2,15 @@
 
 ## Structure 
 
-1. Introduction [Link Text](##Introduction)
-2. Installation DuckDB  [Link Text](##Installation DuckDB)
-3. Analyzing a CSV file with the DuckDB CLI  [Link Text](##Analyzing a CSV file with the DuckDB CLI)
-4. Create a Database File [Link Text](##Create a Database File)
-5. Add tables to the database [Link Text](##Add tables to the database)
-6. Reading a Parquet File in DuckDB [Link Text](##Reading a Parquet File in DuckDB)
-7. Accessing Files from Azure Blob Storage in DuckDB [Link Text](##Accessing Files from Azure Blob Storage in DuckDB)
-8. Project: MongoDB, DuckDB and DBT  [Link Text](##Project: MongoDB, DuckDB and DBT)
-  - Project Structure [Link Text](###Project Structure)
+1. Introduction [Link Text](#Introduction)
+2. Installation DuckDB  [Link Text](#Installation-DuckDB)
+3. Analyzing a CSV file with the DuckDB CLI  [Link Text](#Analyzing-a-CSV-file-with-the-DuckDB-CLI)
+4. Create a Database File [Link Text](#Create-a-Database-File)
+5. Add tables to the database [Link Text](#Add-tables-to-the-database)
+6. Reading a Parquet File in DuckDB [Link Text](#Reading-a-Parquet-File-in-DuckDB)
+7. Accessing Files from Azure Blob Storage in DuckDB [Link Text](#Accessing-Files-from-Azure-Blob-Storage-in-DuckDB)
+8. Project: MongoDB, DuckDB and DBT  [Link Text](#Project:-MongoDB,-DuckDB-and-DBT)
+  - Project Structure [Link Text](#Project-Structure)
 
 ## Introduction 
 This is simply an overview of the capabilities the DuckDB.
