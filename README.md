@@ -2,7 +2,7 @@
 
 ## Structure 
 
-1. Introduction [Link Text](#Introduction)
+1. [Introduction](#Introduction)
 2. Installation DuckDB  [Link Text](#Installation-DuckDB)
 3. Analyzing a CSV file with the DuckDB CLI  [Link Text](#Analyzing-a-CSV-file-with-the-DuckDB-CLI)
 4. Create a Database File [Link Text](#Create-a-Database-File)
