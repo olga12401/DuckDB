@@ -292,51 +292,34 @@ This project represents a data engineering pipeline for extracting, transforming
 ### Directory Structure
 ```
 
-DuckDB/
-│
+project/
 ├── data/
-│   ├── raw/               # Raw JSON data from MongoDB
-│       ├── comments.json
-│       ├── movies.json
-│       ├── users.json
-│       └── mongodb_fetch_complete.flag
-│   ├── transformed/       # Transformed data from DBT
-│       ├── active_users.csv
-│       ├── top_rated_movies.csv
-│       └── dbt_complete.flag
-│
-├── duckdb_1/
-│   ├── database/          # DuckDB database files
-│       ├── my_database.duckdb
-│       └── raw_data_complete.flag
-│   ├── Dockerfile         # Dockerfile for DuckDB services
-│   ├── load_to_duckdb.py  # Script to load raw data into DuckDB
-│   └── load_transformed_to_new_schema.py  # Script to load transformed data into new schema
-│
-├── dbt/                   # DBT project files
-│   ├── dbt_project.yml    # DBT project configuration
-│   ├── profiles.yml       # DBT profiles configuration
-│   ├── Dockerfile         # Dockerfile for DBT services
-│   ├── wait_for_transformations_and_tests.py  # Script to handle DBT execution
-│   ├── models/            # DBT models
-│       ├── raw/           # Raw schema models
-│           ├── schema.yml
-│       ├── transformed/   # Transformed models
-│           ├── active_users.sql
-│           ├── top_rated_movies.sql
-│           ├── schema.yml
-│   ├── tests/             # Tests for DBT models
-│       ├── test_active_users.sql
-│       ├── test_top_rated_movies.sql
-│
+│   ├── raw/                 # Directory for raw JSON data fetched from MongoDB
+│   ├── transformed/         # Directory for transformed data (output from DBT)
 ├── mongodb/
-│   ├── Dockerfile         # Dockerfile for MongoDB fetcher service
-│   ├── fetch_data.py      # Script to fetch data from MongoDB
-│   ├── requirements.txt   # Python dependencies
-│   └── .env               # Environment variables for MongoDB
-│
-├── docker-compose.yml     # Docker Compose configuration
-└── README.md              # Project documentation
+│   ├── .env                 # Environment variables for MongoDB connection
+│   ├── Dockerfile           # Dockerfile to build the MongoDB fetcher image
+│   ├── fetch_data.py        # Script to fetch data from MongoDB
+│   ├── requirements.txt     # Python dependencies for the fetcher
+├── duckdb_1/
+│   ├── database/            # Directory for DuckDB database files
+│   ├── Dockerfile           # Dockerfile to build the DuckDB loader image
+│   ├── load_to_duckdb.py    # Script to load raw data into DuckDB
+│   ├── load_transformed_to_duckdb.py # Script to load transformed data into DuckDB
+├── dbt/
+│   ├── Dockerfile           # Dockerfile to build the DBT image
+│   ├── dbt_project.yml      # DBT project configuration
+│   ├── profiles.yml         # DBT profile configuration for DuckDB
+│   ├── wait_for_transformations_and_tests.py # Script to run DBT and wait for tests
+│   ├── models/
+│   │   ├── test/
+│   │   │   └── users_comments.sql # DBT test to verify data validity
+│   │   ├── transformed/
+│   │   │   ├── schema.yml   # DBT schema for transformed data
+│   │   │   └── users_comments.sql # SQL model for users' activity transformation
+├── docker-compose.yml       # Docker Compose file for orchestrating services
+
+
 
 ```
 
@@ -345,4 +328,158 @@ DuckDB/
 1. ```mongodb/```: Handles data extraction from MongoDB and saves data into JSON files.
 2. ```duckdb_1/```: Manages data loading and transformations within DuckDB.
 3. ```dbt/```: Applies advanced transformations, schema validations, and tests using DBT.
+
+### Detailed Explanation
+
+1. ```mongodb/```
+Purpose: Fetch raw data from MongoDB and save it as JSON files.
+
+- ```dockerfile:```
+
+  - Uses ```python:3.9-slim``` to create a lightweight container.
+  - Installs dependencies from ```requirements.txt```.
+  - Runs the ```fetch_data.py``` script.
+
+- ```fetch_data.py:```
+
+   - Connects to MongoDB using credentials from ```.env```.
+   - Serializes data from MongoDB collections (```users```, ```movies```, ```comments```) into JSON format.
+   - Saves the data into the directory specified by ```DATA_DIR```.
+   - ```.env```: Contains sensitive connection details (MongoDB URI, database name, data directory path).
+
+- ```requirements.txt```: Specifies dependencies: ```pymongo``` (MongoDB driver) and ```python-dotenv``` (to load ```.env``` variables).
+
+2. ```duckdb_1/```
+
+Purpose: Load the extracted JSON data into DuckDB and manage schema-level transformations.
+
+- ```dockerfile```:
+
+   - Uses ```python:3.9-slim``` as the base image.
+   - Installs ```duckdb``` for database management.
+   - Runs the ```load_to_duckdb.py``` script by default.
+
+- ```load_to_duckdb.py```:
+
+   - Monitors the ```/data``` directory for JSON files.
+   - Loads the JSON data into DuckDB as individual tables.
+   - Creates a flag file (```raw_data_complete.flag```) to signal data availability.
+- ```load_transformed_to_duckdb.py```:
+
+   - Waits for a flag (```dbt_complete.flag```) to indicate that DBT transformations are complete.
+
+3. ```dbt/```
+
+Purpose: Transform raw data and validate with DBT.
+
+- ```Dockerfile```:
+   - Base Image: Uses ```python:3.9-slim```.
+   - Dependencies:
+     - Installs ```dbt-core``` and ```dbt-duckdb``` for transformation and validation.
+     - Installs ```git``` for managing DBT dependencies.
+   -Default Command: Runs ```wait_for_transformations_and_tests.py```.
+
+- ```dbt_project.yml```:
+Purpose:
+Configures the DBT project.
+Specifies schemas for raw (raw) and transformed (transformed) models.
+```
+name: 'duckdb_project'
+version: '1.0.0'
+
+profile: 'duckdb'
+
+config-version: 2
+
+model-paths: ["models"]
+
+models:
+  duckdb_project:
+    raw:
+      +schema: raw
+    transformed:
+      +schema: transformed
+```
+
+- ```profiles.yml```:
+Purpose: Configures DBT to connect to the DuckDB database.
+```
+duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: /duckdb_1/database/my_database.duckdb
+      threads: 1
+
+```
+
+- ```wait_for_transformations_and_tests.py```:
+Functionality:
+   - Waits for the flag file (```raw_data_complete.flag```) indicating raw data loading.
+
+```
+import os
+import time
+import subprocess
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+RAW_DATA_FLAG = "/duckdb_1/database/raw_data_complete.flag"
+TRANSFORMED_FLAG = "/duckdb_1/database/dbt_complete.flag"
+TRANSFORMED_DIR = "/data/transformed"
+
+DBT_COMMANDS = [
+    ["dbt", "run"],
+    ["dbt", "test"]
+]
+
+def wait_for_flag(flag_path, timeout=600, interval=5):
+    """
+    Wait for a specified flag file to be created, with a timeout.
+    """
+    logging.info(f"Waiting for flag file '{flag_path}'...")
+    elapsed_time = 0
+    while not os.path.exists(flag_path):
+        time.sleep(interval)
+        elapsed_time += interval
+        if elapsed_time >= timeout:
+            raise TimeoutError(f"Timeout waiting for flag file '{flag_path}'.")
+    logging.info(f"Flag file '{flag_path}' detected.")
+
+def ensure_transformed_directory():
+    """
+    Ensure that the transformed directory exists and is ready.
+    """
+    logging.info(f"Checking transformed directory: '{TRANSFORMED_DIR}'")
+    if not os.path.exists(TRANSFORMED_DIR):
+        os.makedirs(TRANSFORMED_DIR)
+        logging.info(f"Created transformed directory: '{TRANSFORMED_DIR}'")
+
+def run_dbt_commands():
+    """
+    Execute the DBT commands (run and test).
+    """
+    for command in DBT_COMMANDS:
+        logging.info(f"Running DBT command: {' '.join(command)}")
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0:
+            logging.error(f"DBT command failed: {result.stderr}")
+            raise Exception(f"DBT command failed: {result.stderr}")
+        logging.info(result.stdout)
+
+if __name__ == "__main__":
+    try:
+        wait_for_flag(RAW_DATA_FLAG)
+        ensure_transformed_directory()
+        run_dbt_commands()
+        with open(TRANSFORMED_FLAG, "w") as flag:
+            flag.write("DBT_TRANSFORMATIONS_COMPLETE")
+        logging.info(f"Flag file created: {TRANSFORMED_FLAG}")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        exit(1)
+```
 
