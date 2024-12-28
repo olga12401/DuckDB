@@ -1,18 +1,42 @@
 import os
 import duckdb
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 RAW_DIR = "/data"
-DB_PATH = "/duckdb_1/database/my_database.duckdb"
-FLAG_FILE = "/duckdb_1/database/raw_data_complete.flag"
+DB_DIR = "/duckdb_1/database"
+DB_PATH = f"{DB_DIR}/my_database.duckdb"
+FLAG_FILE = f"{DB_DIR}/raw_data_complete.flag"
+WAIT_TIMEOUT = 60  # Maximum wait time in seconds
+
+def ensure_directory_exists(directory):
+    """
+    Ensure that the directory exists, creating it if necessary.
+    """
+    if not os.path.exists(directory):
+        logging.info(f"Directory '{directory}' does not exist. Creating it...")
+        os.makedirs(directory)
+        logging.info(f"Directory '{directory}' created.")
+
+def ensure_database_exists():
+    """
+    Ensure the DuckDB database file exists.
+    """
+    if not os.path.exists(DB_PATH):
+        logging.info(f"Database file '{DB_PATH}' does not exist. Creating a new one.")
+        conn = duckdb.connect(DB_PATH)
+        conn.close()
+        logging.info(f"Database '{DB_PATH}' created successfully.")
 
 def load_raw_data():
     """
-    Load raw JSON data into DuckDB tables.
+    Load raw data JSON files into the DuckDB database.
     """
+    ensure_directory_exists(DB_DIR)
+    ensure_database_exists()
     logging.info(f"Connecting to DuckDB database at '{DB_PATH}'...")
     conn = duckdb.connect(DB_PATH)
 
@@ -28,12 +52,11 @@ def load_raw_data():
 
 if __name__ == "__main__":
     try:
+        ensure_directory_exists(DB_DIR)
         load_raw_data()
         with open(FLAG_FILE, "w") as flag:
             flag.write("RAW_DATA_COMPLETE")
         logging.info(f"Flag file created: {FLAG_FILE}")
-        logging.info(f"To open the database manually, run: duckdb {DB_PATH}")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
         exit(1)
-

@@ -10,3 +10,4 @@ RUN pip install --no-cache-dir dbt-core==1.5.2 dbt-duckdb==1.5.2
 COPY . .
 
 CMD ["python", "wait_for_transformations_and_tests.py"]
+

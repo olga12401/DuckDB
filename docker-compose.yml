@@ -5,9 +5,9 @@ services:
     build:
       context: ./mongodb
     volumes:
-      - ./data/raw:/data  # Mount raw data directory
+      - ./data/raw:/data
     env_file:
-      - ./mongodb/.env  # MongoDB connection environment variables
+      - ./mongodb/.env
     networks:
       - duckdb_network
     command: ["python", "fetch_data.py"]
@@ -22,8 +22,8 @@ services:
     build:
       context: ./duckdb_1
     volumes:
-      - ./data/raw:/data  # Mount raw data directory
-      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
+      - ./data/raw:/data
+      - ./duckdb_1/database:/duckdb_1/database
     depends_on:
       mongodb_fetcher:
         condition: service_completed_successfully
@@ -41,9 +41,9 @@ services:
     build:
       context: ./dbt
     volumes:
-      - ./data/transformed:/data/transformed  # Mount transformed data directory
-      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
-      - ~/.dbt/profiles.yml:/root/.dbt/profiles.yml  # Mount DBT profiles
+      - ./data/transformed:/data/transformed
+      - ./duckdb_1/database:/duckdb_1/database
+      - ~/.dbt/profiles.yml:/root/.dbt/profiles.yml
     depends_on:
       duckdb_raw_loader:
         condition: service_completed_successfully
@@ -56,13 +56,15 @@ services:
       retries: 5
       start_period: 20s
       timeout: 5s
+    environment:
+      - DBT_LOG_LEVEL=DEBUG
 
   duckdb_transformed_loader:
     build:
       context: ./duckdb_1
     volumes:
-      - ./data/transformed:/data/transformed  # Mount transformed data directory
-      - ./duckdb_1/database:/duckdb_1/database  # Mount DuckDB database directory
+      - ./data/transformed:/data/transformed
+      - ./duckdb_1/database:/duckdb_1/database
     depends_on:
       dbt_transformer:
         condition: service_completed_successfully
