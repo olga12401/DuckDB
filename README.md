@@ -11,7 +11,7 @@
 7. [Accessing Files from Azure Blob Storage in DuckDB](#Accessing-Files-from-Azure-Blob-Storage-in-DuckDB)
 8. [Project: MongoDB, DuckDB and DBT](#Project-MongoDB-DuckDB-and-DBT)
     - [Project Structure](#Project-Structure)
-    - [Detailed Explanation](#Detailed Explanation)
+    - [Detailed Explanation](#Detailed-Explanation)
 
 ## Introduction 
 This is simply an overview of the capabilities the DuckDB.
