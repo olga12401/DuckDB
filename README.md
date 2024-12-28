@@ -11,6 +11,7 @@
 7. [Accessing Files from Azure Blob Storage in DuckDB](#Accessing-Files-from-Azure-Blob-Storage-in-DuckDB)
 8. [Project: MongoDB, DuckDB and DBT](#Project-MongoDB-DuckDB-and-DBT)
     - [Project Structure](#Project-Structure)
+    - [Detailed Explanation](#Detailed Explanation)
 
 ## Introduction 
 This is simply an overview of the capabilities the DuckDB.
@@ -364,6 +365,7 @@ Purpose: Load the extracted JSON data into DuckDB and manage schema-level transf
    - Monitors the ```/data``` directory for JSON files.
    - Loads the JSON data into DuckDB as individual tables.
    - Creates a flag file (```raw_data_complete.flag```) to signal data availability.
+
 - ```load_transformed_to_duckdb.py```:
 
    - Waits for a flag (```dbt_complete.flag```) to indicate that DBT transformations are complete.
