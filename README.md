@@ -9,7 +9,7 @@
 5. [Add tables to the database](#Add-tables-to-the-database)
 6. [Reading a Parquet File in DuckDB](#Reading-a-Parquet-File-in-DuckDB)
 7. [Accessing Files from Azure Blob Storage in DuckDB](#Accessing-Files-from-Azure-Blob-Storage-in-DuckDB)
-8. [Project: MongoDB, DuckDB and DBT](#Project:-MongoDB,-DuckDB-and-DBT)
+8. [Project: MongoDB, DuckDB and DBT](#Project-MongoDB-DuckDB-and-DBT)
     - [Project Structure](#Project-Structure)
 
 ## Introduction 
@@ -285,12 +285,64 @@ SELECT * FROM name_table LIMIT 10;
 
 <img width="670" alt="blob2" src="https://github.com/user-attachments/assets/ac1b182f-dd3b-4af4-86aa-120f3ef51586">
 
-## Project: MongoDB, DuckDB and DBT  
+## Project MongoDB, DuckDB and DBT  
 
 This project represents a data engineering pipeline for extracting, transforming, and analyzing data, specifically using MongoDB, DuckDB, and DBT (Data Build Tool). Below is a detailed explanation of the project structure and its components:
+
+### Directory Structure
+```
+
+DuckDB/
+│
+├── data/
+│   ├── raw/               # Raw JSON data from MongoDB
+│       ├── comments.json
+│       ├── movies.json
+│       ├── users.json
+│       └── mongodb_fetch_complete.flag
+│   ├── transformed/       # Transformed data from DBT
+│       ├── active_users.csv
+│       ├── top_rated_movies.csv
+│       └── dbt_complete.flag
+│
+├── duckdb_1/
+│   ├── database/          # DuckDB database files
+│       ├── my_database.duckdb
+│       └── raw_data_complete.flag
+│   ├── Dockerfile         # Dockerfile for DuckDB services
+│   ├── load_to_duckdb.py  # Script to load raw data into DuckDB
+│   └── load_transformed_to_new_schema.py  # Script to load transformed data into new schema
+│
+├── dbt/                   # DBT project files
+│   ├── dbt_project.yml    # DBT project configuration
+│   ├── profiles.yml       # DBT profiles configuration
+│   ├── Dockerfile         # Dockerfile for DBT services
+│   ├── wait_for_transformations_and_tests.py  # Script to handle DBT execution
+│   ├── models/            # DBT models
+│       ├── raw/           # Raw schema models
+│           ├── schema.yml
+│       ├── transformed/   # Transformed models
+│           ├── active_users.sql
+│           ├── top_rated_movies.sql
+│           ├── schema.yml
+│   ├── tests/             # Tests for DBT models
+│       ├── test_active_users.sql
+│       ├── test_top_rated_movies.sql
+│
+├── mongodb/
+│   ├── Dockerfile         # Dockerfile for MongoDB fetcher service
+│   ├── fetch_data.py      # Script to fetch data from MongoDB
+│   ├── requirements.txt   # Python dependencies
+│   └── .env               # Environment variables for MongoDB
+│
+├── docker-compose.yml     # Docker Compose configuration
+└── README.md              # Project documentation
+
+```
 
 ### Project Structure
 
 1. ```mongodb/```: Handles data extraction from MongoDB and saves data into JSON files.
 2. ```duckdb_1/```: Manages data loading and transformations within DuckDB.
 3. ```dbt/```: Applies advanced transformations, schema validations, and tests using DBT.
+
