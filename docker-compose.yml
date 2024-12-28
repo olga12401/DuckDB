@@ -1,27 +1,37 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongodb_fetcher:
     build:
       context: ./mongodb
-      dockerfile: Dockerfile
     volumes:
-      - ./data:/data # Save fetched JSON files to the local 'data' directory
+      - ./data/raw:/data  # Maps raw data directory for JSON files
     env_file:
-      - ./mongodb/.env # Use environment file for MongoDB connection
-    command: python fetch_data.py
+      - ./mongodb/.env  # Load environment variables
+    networks:
+      - duckdb_network
+    command: ["python", "fetch_data.py"]
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/data/mongodb_fetch_complete.flag"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
-  duckdb_loader:
+  duckdb_raw_loader:
     build:
       context: ./duckdb_1
-      dockerfile: Dockerfile
     volumes:
-      - ./data:/data # Mount the same 'data' directory for JSON files
-      - ./duckdb_1:/duckdb_1 # Save DuckDB database to the local 'duckdb_1' directory
-    command: python load_to_duckdb.py
+      - ./data/raw:/data  # Maps raw data directory
+      - ./duckdb_1/database:/duckdb_1  # Maps DuckDB directory
     depends_on:
-      - mongodb_fetcher
+      mongodb_fetcher:
+        condition: service_completed_successfully
+    networks:
+      - duckdb_network
+    command: ["python", "load_to_duckdb.py"]
 
-
-
-
+networks:
+  duckdb_network:
+    driver: bridge

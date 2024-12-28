@@ -1,5 +1,17 @@
 # DuckDB
 
+## Structure 
+
+1. Introduction [Link Text](##Introduction)
+2. Installation DuckDB  [Link Text](##Installation DuckDB)
+3. Analyzing a CSV file with the DuckDB CLI  [Link Text](##Analyzing a CSV file with the DuckDB CLI)
+4. Create a Database File [Link Text](##Create a Database File)
+5. Add tables to the database [Link Text](##Add tables to the database)
+6. Reading a Parquet File in DuckDB [Link Text](##Reading a Parquet File in DuckDB)
+7. Accessing Files from Azure Blob Storage in DuckDB [Link Text](##Accessing Files from Azure Blob Storage in DuckDB)
+8. Project: MongoDB, DuckDB and DBT  [Link Text](##Project: MongoDB, DuckDB and DBT)
+  - Project Structure [Link Text](###Project Structure)
+
 ## Introduction 
 This is simply an overview of the capabilities the DuckDB.
 
@@ -272,3 +284,13 @@ SELECT * FROM name_table LIMIT 10;
 ```
 
 <img width="670" alt="blob2" src="https://github.com/user-attachments/assets/ac1b182f-dd3b-4af4-86aa-120f3ef51586">
+
+## Project: MongoDB, DuckDB and DBT  
+
+This project represents a data engineering pipeline for extracting, transforming, and analyzing data, specifically using MongoDB, DuckDB, and DBT (Data Build Tool). Below is a detailed explanation of the project structure and its components:
+
+### Project Structure
+
+1. ```mongodb/```: Handles data extraction from MongoDB and saves data into JSON files.
+2. ```duckdb_1/```: Manages data loading and transformations within DuckDB.
+3. ```dbt/```: Applies advanced transformations, schema validations, and tests using DBT.

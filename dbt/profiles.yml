@@ -1,0 +1,6 @@
+duckdb_profile:
+  outputs:
+    dev:
+      type: duckdb
+      path: "/duckdb_1/my_database.duckdb"
+  target: dev

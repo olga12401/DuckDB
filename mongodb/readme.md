@@ -60,3 +60,19 @@ sudo systemctl status mongod
 
 ```
 
+MongoDB Atlas itself is a cloud service and cannot be directly run in Docker. However, we can use a self-hosted MongoDB instance in Docker to mimic the behavior of MongoDB Atlas for the following reasons:
+
+1. Local Development and Testing
+
+We want to test your application locally without connecting to the internet or incurring cloud costs.
+We want to mimic the behavior of MongoDB Atlas by running a Dockerized MongoDB instance.
+
+2. Containerized Environments
+
+The development or deployment workflow relies heavily on Docker and you want MongoDB to run as part of a containerized stack.
+
+3. Offline or Air-Gapped Scenarios
+
+We are working in an environment where an internet connection is unavailable or restricted (e.g., secure networks, air-gapped systems).
+Example Use Case
+We are developing an application that reads data from MongoDB and writes it to DuckDB, and we want a fully containerized setup for local testing.
