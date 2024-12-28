@@ -348,6 +348,85 @@ Purpose: Fetch raw data from MongoDB and save it as JSON files.
    - Saves the data into the directory specified by ```DATA_DIR```.
    - ```.env```: Contains sensitive connection details (MongoDB URI, database name, data directory path).
 
+```
+import os
+import json
+import datetime
+from bson import ObjectId
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Load environment variables
+load_dotenv()
+
+# Environment variables
+MONGO_URI = os.getenv("MONGO_URI")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "sample_mflix")
+DATA_DIR = os.getenv("DATA_DIR", "/data")
+FLAG_FILE = os.path.join(DATA_DIR, "mongodb_fetch_complete.flag")
+
+# Ensure the data directory exists
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# Custom serializer for MongoDB objects
+def serialize(obj):
+    """
+    Custom serializer for MongoDB objects.
+    """
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    return obj
+
+try:
+    # Connect to MongoDB
+    logging.info("Connecting to MongoDB...")
+    client = MongoClient(MONGO_URI)
+    client.admin.command('ping')  # Test the connection
+    logging.info("MongoDB connection successful!")
+
+    db = client[DATABASE_NAME]
+
+    # List of collections to fetch
+    collections_to_fetch = ["users", "movies", "comments"]
+
+    for collection_name in collections_to_fetch:
+        logging.info(f"Fetching data from collection: {collection_name}...")
+
+        # Ensure the collection exists
+        if collection_name not in db.list_collection_names():
+            logging.warning(f"Collection '{collection_name}' does not exist. Skipping.")
+            continue
+
+        # Fetch data from the collection
+        collection = db[collection_name]
+        data = list(collection.find())
+
+        if not data:
+            logging.warning(f"Collection '{collection_name}' is empty. Skipping.")
+            continue
+
+        # Save data to a JSON file
+        file_path = os.path.join(DATA_DIR, f"{collection_name}.json")
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=2, default=serialize)
+        logging.info(f"Data saved to {file_path}.")
+
+    # Create a flag file to signal completion
+    with open(FLAG_FILE, "w") as f:
+        f.write("MONGODB_FETCH_COMPLETE")
+    logging.info(f"Flag file created: {FLAG_FILE}")
+
+except Exception as e:
+    logging.error(f"An error occurred: {e}")
+    exit(1)
+```
+
 - ```requirements.txt```: Specifies dependencies: ```pymongo``` (MongoDB driver) and ```python-dotenv``` (to load ```.env``` variables).
 
 2. ```duckdb_1/```
@@ -369,6 +448,72 @@ Purpose: Load the extracted JSON data into DuckDB and manage schema-level transf
 - ```load_transformed_to_duckdb.py```:
 
    - Waits for a flag (```dbt_complete.flag```) to indicate that DBT transformations are complete.
+
+```
+import os
+import duckdb
+import logging
+import time
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+RAW_DIR = "/data"
+DB_DIR = "/duckdb_1/database"
+DB_PATH = f"{DB_DIR}/my_database.duckdb"
+FLAG_FILE = f"{DB_DIR}/raw_data_complete.flag"
+WAIT_TIMEOUT = 60  # Maximum wait time in seconds
+
+def ensure_directory_exists(directory):
+    """
+    Ensure that the directory exists, creating it if necessary.
+    """
+    if not os.path.exists(directory):
+        logging.info(f"Directory '{directory}' does not exist. Creating it...")
+        os.makedirs(directory)
+        logging.info(f"Directory '{directory}' created.")
+
+def ensure_database_exists():
+    """
+    Ensure the DuckDB database file exists.
+    """
+    if not os.path.exists(DB_PATH):
+        logging.info(f"Database file '{DB_PATH}' does not exist. Creating a new one.")
+        conn = duckdb.connect(DB_PATH)
+        conn.close()
+        logging.info(f"Database '{DB_PATH}' created successfully.")
+
+def load_raw_data():
+    """
+    Load raw data JSON files into the DuckDB database.
+    """
+    ensure_directory_exists(DB_DIR)
+    ensure_database_exists()
+    logging.info(f"Connecting to DuckDB database at '{DB_PATH}'...")
+    conn = duckdb.connect(DB_PATH)
+
+    for file_name in os.listdir(RAW_DIR):
+        if file_name.endswith(".json"):
+            table_name = os.path.splitext(file_name)[0]
+            file_path = os.path.join(RAW_DIR, file_name)
+            logging.info(f"Loading data from '{file_path}' into table '{table_name}'...")
+            conn.execute(f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM read_json_auto('{file_path}')")
+
+    logging.info("Raw data loading complete.")
+    conn.close()
+
+if __name__ == "__main__":
+    try:
+        ensure_directory_exists(DB_DIR)
+        load_raw_data()
+        with open(FLAG_FILE, "w") as flag:
+            flag.write("RAW_DATA_COMPLETE")
+        logging.info(f"Flag file created: {FLAG_FILE}")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        exit(1)
+
+```
 
 3. ```dbt/```
 
